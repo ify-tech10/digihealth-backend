@@ -64,3 +64,6 @@ app:
   cors:
     # comma-separated, e.g. http://localhost:5173,https://digihealth.onrender.com
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  bootstrap-admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    name: ${BOOTSTRAP_ADMIN_NAME:DiGi Health Admin}
