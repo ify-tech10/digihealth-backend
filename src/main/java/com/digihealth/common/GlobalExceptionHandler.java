@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -100,6 +101,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<Map<String, Object>> unexpected(Exception ex) {
+        /* Other Spring MVC errors (wrong content type, etc.) keep their own 4xx status. */
+        if (ex instanceof ErrorResponse er && er.getStatusCode().is4xxClientError()) {
+            return body(HttpStatus.valueOf(er.getStatusCode().value()), "This request couldn't be processed.");
+        }
         log.error("Unhandled error", ex);
         return body(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong on our side. Please try again.");
     }
