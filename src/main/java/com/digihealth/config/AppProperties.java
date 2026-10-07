@@ -12,7 +12,8 @@ public record AppProperties(
         Cors cors,
         BootstrapAdmin bootstrapAdmin,
         Tokens tokens,
-        Mail mail) {
+        Mail mail,
+        Cloudinary cloudinary) {
 
     public record Cors(List<String> allowedOrigins) {
     }
@@ -31,5 +32,9 @@ public record AppProperties(
     }
 
     public record Mail(boolean enabled, String from, String fromName) {
+    }
+
+    /** cloudinary://<api_key>:<api_secret>@<cloud_name> */
+    public record Cloudinary(String url) {
     }
 }

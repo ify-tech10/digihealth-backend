@@ -12,10 +12,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.digihealth.activity.ActivityService;
 import com.digihealth.auth.dto.AuthDtos.LoginRequest;
 import com.digihealth.auth.dto.AuthDtos.LoginResponse;
 import com.digihealth.common.ApiException;
 import com.digihealth.config.AppProperties;
+import com.digihealth.notification.NotificationService;
 import com.digihealth.user.User;
 import com.digihealth.user.UserRepository;
 
@@ -40,11 +42,14 @@ public class AuthService {
     private final JwtService jwt;
     private final LoginAttempts attempts;
     private final AppProperties props;
+    private final ActivityService activity;
+    private final NotificationService notifications;
     private final String dummyHash;
 
     public AuthService(UserRepository users, RefreshTokenRepository refreshTokens,
                        PasswordTokenRepository passwordTokens, PasswordLinks passwordLinks,
-                       PasswordEncoder encoder, JwtService jwt, LoginAttempts attempts, AppProperties props) {
+                       PasswordEncoder encoder, JwtService jwt, LoginAttempts attempts, AppProperties props,
+                       ActivityService activity, NotificationService notifications) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.passwordTokens = passwordTokens;
@@ -53,6 +58,8 @@ public class AuthService {
         this.jwt = jwt;
         this.attempts = attempts;
         this.props = props;
+        this.activity = activity;
+        this.notifications = notifications;
         /* Checked against when the email doesn't exist, so both cases take the same time. */
         this.dummyHash = encoder.encode("timing-equaliser-" + UUID.randomUUID());
     }
@@ -91,6 +98,7 @@ public class AuthService {
 
         Instant now = Instant.now();
         user.setLastLoginAt(now);
+        activity.record(user, "SIGNED_IN", "Signed in", "USER", user.getId());
 
         String raw = newRefreshToken(user, UUID.randomUUID(), req.rememberMe(), now);
         LoginResponse body = new LoginResponse(
@@ -172,10 +180,19 @@ public class AuthService {
             throw ApiException.forbidden("Your account has been deactivated. Please contact DiGi Health support.");
         }
 
+        boolean firstPassword = !user.hasPassword();
         user.setPasswordHash(encoder.encode(newPassword));
         passwordTokens.invalidateAllForUser(user.getId(), now);
         refreshTokens.revokeAllForUser(user.getId(), now);
         attempts.succeeded(user.getEmail());
+
+        if (firstPassword) {
+            activity.record(user, "PASSWORD_SET", "Set their password and activated the account", "USER", user.getId());
+            notifications.notify(user.getId(), "Welcome to DiGi Health",
+                "Your account is ready. New assignments, approvals and updates will show up here.", null);
+        } else {
+            activity.record(user, "PASSWORD_RESET", "Reset their password from an emailed link", "USER", user.getId());
+        }
     }
 
     /* ── Change password while signed in ── */
@@ -190,6 +207,7 @@ public class AuthService {
             throw ApiException.badRequest("Choose a password different from your current one.");
         }
         user.setPasswordHash(encoder.encode(newPassword));
+        activity.record(user, "PASSWORD_CHANGED", "Changed their password", "USER", user.getId());
 
         /* Sign out every other device; keep this one signed in. */
         Instant now = Instant.now();

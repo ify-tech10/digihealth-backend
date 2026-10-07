@@ -31,6 +31,11 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
+
   # Resend SMTP. Username is the word "resend", password is the API key.
   # Port 2587 is Resend's alternative STARTTLS port; some hosts block 587.
   mail:
@@ -82,3 +87,7 @@ app:
     enabled: ${MAIL_ENABLED:true}      # false = log links to the console instead of emailing
     from: ${MAIL_FROM:onboarding@resend.dev}
     from-name: DiGi Health
+  cloudinary:
+    # Cloudinary dashboard > API Keys > "API environment variable":
+    # cloudinary://<api_key>:<api_secret>@<cloud_name>
+    url: ${CLOUDINARY_URL:}
