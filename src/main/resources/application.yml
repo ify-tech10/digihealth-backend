@@ -34,7 +34,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 30MB
+      max-request-size: 45MB      # the provider form can carry 4 files
 
   # Resend SMTP. Username is the word "resend", password is the API key.
   # Port 2587 is Resend's alternative STARTTLS port; some hosts block 587.
