@@ -74,6 +74,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, PUBLIC_AUTH.toArray(String[]::new)).permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/provider/apply", "/care-requests", "/hmo/apply").permitAll()
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .bearerTokenResolver(bearerTokenResolver())

@@ -12,6 +12,8 @@ public interface ProviderRepository extends JpaRepository<Provider, Long> {
 
     Optional<Provider> findByUserId(Long userId);
 
+    List<Provider> findByUserIdIn(Collection<Long> userIds);
+
     List<Provider> findByStatusOrderByCreatedAtDesc(String status);
 
     List<Provider> findAllByOrderByCreatedAtDesc();

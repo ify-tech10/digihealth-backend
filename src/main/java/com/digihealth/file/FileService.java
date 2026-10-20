@@ -105,6 +105,20 @@ public class FileService {
         return new FileView(f.getId(), f.getOriginalName(), urlFor(f), f.getContentType(), f.getSizeBytes());
     }
 
+    /** Fresh links for many files at once (id -> url); missing ids are skipped. */
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, String> urlsFor(java.util.Collection<Long> ids) {
+        java.util.Map<Long, String> out = new java.util.HashMap<>();
+        java.util.List<Long> wanted = ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
+        if (wanted.isEmpty() || !cloudinary.isConfigured()) {
+            return out;
+        }
+        for (StoredFile f : files.findAllById(wanted)) {
+            out.put(f.getId(), urlFor(f));
+        }
+        return out;
+    }
+
     @Transactional(readOnly = true)
     public StoredFile get(Long id) {
         return files.findById(id).orElseThrow(() -> ApiException.notFound("File not found."));

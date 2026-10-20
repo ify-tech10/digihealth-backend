@@ -66,6 +66,24 @@ public class EmailService {
         send(to, subject, text, html);
     }
 
+    /** A short plain message, e.g. "Update on your application". */
+    @Async
+    public void sendNotice(String to, String name, String subject, String heading, java.util.List<String> paragraphs) {
+        String greeting = "Hello" + (name == null || name.isBlank() ? "," : " " + name.trim() + ",");
+        StringBuilder text = new StringBuilder(greeting).append("\n\n");
+        StringBuilder html = new StringBuilder()
+            .append("<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a2550\">")
+            .append("<h2 style=\"margin:0 0 16px\">").append(esc(heading)).append("</h2>")
+            .append("<p>").append(esc(greeting)).append("</p>");
+        for (String p : paragraphs) {
+            text.append(p).append("\n\n");
+            html.append("<p>").append(esc(p)).append("</p>");
+        }
+        text.append("DiGi Health");
+        html.append("<p style=\"font-size:12px;color:#888\">DiGi Health &middot; Healthcare at home</p></div>");
+        send(to, subject, text.toString(), html.toString());
+    }
+
     private void send(String to, String subject, String text, String html) {
         AppProperties.Mail mail = props.mail();
         if (mail == null || !mail.enabled()) {

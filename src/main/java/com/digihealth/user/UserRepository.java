@@ -16,4 +16,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByRoleIn(Collection<Role> roles);
 
     List<User> findByRoleInAndActiveTrue(Collection<Role> roles);
+
+    List<User> findAllByOrderByCreatedAtDesc();
+
+    List<User> findByRoleOrderByCreatedAtDesc(Role role);
+
+    long countByRoleInAndActiveTrue(Collection<Role> roles);
 }

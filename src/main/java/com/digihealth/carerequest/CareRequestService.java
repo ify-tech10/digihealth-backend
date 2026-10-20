@@ -11,6 +11,8 @@ import com.digihealth.carerequest.CareRequestDtos.CreateCareRequest;
 import com.digihealth.carerequest.CareRequestDtos.CreatedCareRequest;
 import com.digihealth.common.CurrentUser;
 import com.digihealth.notification.NotificationService;
+import com.digihealth.patient.Patient;
+import com.digihealth.patient.PatientRepository;
 import com.digihealth.user.Role;
 import com.digihealth.user.User;
 import com.digihealth.user.UserRepository;
@@ -29,14 +31,16 @@ public class CareRequestService {
     private final PasswordLinks passwordLinks;
     private final NotificationService notifications;
     private final ActivityService activity;
+    private final PatientRepository patients;
 
     public CareRequestService(CareRequestRepository requests, UserRepository users, PasswordLinks passwordLinks,
-                              NotificationService notifications, ActivityService activity) {
+                              NotificationService notifications, ActivityService activity, PatientRepository patients) {
         this.requests = requests;
         this.users = users;
         this.passwordLinks = passwordLinks;
         this.notifications = notifications;
         this.activity = activity;
+        this.patients = patients;
     }
 
     @Transactional
@@ -51,6 +55,9 @@ public class CareRequestService {
             patient.setPhoneNumber(body.phoneNumber().trim());
             patient.setLocationArea(blankToNull(body.locationArea()));
             patient = users.save(patient);
+            Patient profile = new Patient(patient.getId(), Patient.STANDARD);
+            profile.setAddress(blankToNull(body.address()));
+            patients.save(profile);
             accountCreated = true;
         }
 

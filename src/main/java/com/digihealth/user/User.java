@@ -50,6 +50,9 @@ public class User extends BaseEntity {
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
+    @Column(name = "created_by_id")
+    private Long createdById;
+
     public User(String email, String fullName, Role role) {
         setEmail(email);
         this.fullName = fullName;
