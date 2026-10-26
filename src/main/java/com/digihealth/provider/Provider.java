@@ -1,6 +1,12 @@
 package com.digihealth.provider;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -130,6 +136,69 @@ public class Provider extends BaseEntity {
     /** Switched on/off by the provider; only available providers can be assigned. */
     @Column(name = "is_available", nullable = false)
     private boolean available = true;
+
+    /** Comma-separated area codes the provider covers (besides their home area). */
+    @Column(name = "coverage_areas")
+    private String coverageAreas;
+
+    @Column(name = "default_start_time")
+    private LocalTime defaultStartTime;
+
+    @Column(name = "default_end_time")
+    private LocalTime defaultEndTime;
+
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "account_name")
+    private String accountName;
+
+    @Column(name = "account_number_enc")
+    private String accountNumberEnc;
+
+    @Column(name = "account_last4")
+    private String accountLast4;
+
+    @Column(name = "bvn_enc")
+    private String bvnEnc;
+
+    @Column(name = "bvn_last4")
+    private String bvnLast4;
+
+    @Column(name = "nin_enc")
+    private String ninEnc;
+
+    @Column(name = "nin_last4")
+    private String ninLast4;
+
+    @Column(name = "earning_structure")
+    private String earningStructure;
+
+    @Column(name = "earning_rate")
+    private BigDecimal earningRate;
+
+    @Column(name = "earning_status")
+    private String earningStatus;
+
+    @Column(name = "earning_updated_at")
+    private Instant earningUpdatedAt;
+
+    /** Home area plus chosen coverage areas, upper-case. */
+    public Set<String> areasCovered() {
+        Set<String> out = new LinkedHashSet<>();
+        if (locationArea != null && !locationArea.isBlank()) {
+            out.add(locationArea.trim().toUpperCase(Locale.ROOT));
+        }
+        if (coverageAreas != null) {
+            Arrays.stream(coverageAreas.split(",")).map(String::trim).filter(x -> !x.isEmpty())
+                .map(x -> x.toUpperCase(Locale.ROOT)).forEach(out::add);
+        }
+        return out;
+    }
+
+    public boolean covers(String area) {
+        return area != null && areasCovered().contains(area.trim().toUpperCase(Locale.ROOT));
+    }
 
     public Provider(String fullName, String email, String phoneNumber) {
         this.fullName = fullName;

@@ -19,6 +19,10 @@ public interface CareRequestRepository extends JpaRepository<CareRequest, Long> 
 
     List<CareRequest> findByAssignedProviderIdOrderByCreatedAtDesc(Long providerId);
 
+    long countByAssignedProviderIdAndStatusAndClosedAtGreaterThanEqual(Long providerId, String status, java.time.Instant since);
+
+    long countByAssignedProviderIdAndStatusIn(Long providerId, Collection<String> statuses);
+
     /** [providerId, number of open requests] for each provider given. */
     @Query("""
         select r.assignedProviderId, count(r) from CareRequest r

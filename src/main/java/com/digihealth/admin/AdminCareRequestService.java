@@ -124,14 +124,17 @@ public class AdminCareRequestService {
             }
         }
 
+        /* Only providers covering the patient's area (home area or a chosen coverage area). */
         String wanted = area;
+        if (wanted == null) {
+            return List.of();
+        }
         return usable.stream()
+            .filter(p -> p.covers(wanted))
             .map(p -> new AvailableProvider(p.getId(), p.getFullName(), typeOf(p), p.getLocationArea(),
-                p.getPhoneNumber(), wanted != null && wanted.equalsIgnoreCase(p.getLocationArea()),
-                load.getOrDefault(p.getId(), 0L)))
-            /* Same area first, then whoever has the fewest open requests. */
-            .sorted(Comparator.comparing(AvailableProvider::sameArea).reversed()
-                .thenComparingLong(AvailableProvider::openRequests)
+                p.getPhoneNumber(), true, load.getOrDefault(p.getId(), 0L)))
+            /* Whoever has the fewest open requests first. */
+            .sorted(Comparator.comparingLong(AvailableProvider::openRequests)
                 .thenComparing(AvailableProvider::fullName, String.CASE_INSENSITIVE_ORDER))
             .toList();
     }
@@ -149,6 +152,17 @@ public class AdminCareRequestService {
         }
         User providerUser = users.findById(p.getUserId()).filter(User::isActive)
             .orElseThrow(() -> ApiException.badRequest(p.getFullName() + "'s account is deactivated."));
+        if (r.getLocationArea() == null) {
+            throw ApiException.badRequest("This request has no location area, so it can't be matched to a provider. "
+                + "Ask Customer Care to confirm the patient's area first.");
+        }
+        if (!p.covers(r.getLocationArea())) {
+            throw ApiException.badRequest(p.getFullName() + " doesn't cover " + AdminProviderService.label(r.getLocationArea())
+                + ". Choose a provider in the patient's area.");
+        }
+        if (!p.isAvailable()) {
+            throw ApiException.badRequest(p.getFullName() + " is currently unavailable.");
+        }
 
         r.setAssignedProviderId(p.getId());
         r.setAssignedAt(Instant.now());

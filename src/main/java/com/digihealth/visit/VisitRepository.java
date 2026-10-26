@@ -15,4 +15,15 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     List<Visit> findByPatientIdOrderByScheduledAtDesc(Long patientId);
 
     List<Visit> findByCareRequestIdOrderByScheduledAtAsc(Long careRequestId);
+
+    List<Visit> findByProviderIdAndStatusIn(Long providerId, java.util.Collection<String> statuses);
+
+    long countByProviderIdAndStatus(Long providerId, String status);
+
+    long countByProviderIdAndStatusAndCheckOutAtGreaterThanEqual(Long providerId, String status, Instant since);
+
+    List<Visit> findByCareRequestIdInAndStatusAndScheduledAtGreaterThanEqualOrderByScheduledAtAsc(
+        java.util.Collection<Long> careRequestIds, String status, Instant from);
+
+    List<Visit> findByCareRequestIdInAndStatusOrderByScheduledAtDesc(java.util.Collection<Long> careRequestIds, String status);
 }

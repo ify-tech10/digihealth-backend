@@ -13,7 +13,8 @@ public record AppProperties(
         BootstrapAdmin bootstrapAdmin,
         Tokens tokens,
         Mail mail,
-        Cloudinary cloudinary) {
+        Cloudinary cloudinary,
+        Security security) {
 
     public record Cors(List<String> allowedOrigins) {
     }
@@ -36,5 +37,9 @@ public record AppProperties(
 
     /** cloudinary://<api_key>:<api_secret>@<cloud_name> */
     public record Cloudinary(String url) {
+    }
+
+    /** dataKey: base64 of 32 random bytes, encrypts BVN / NIN / account numbers. */
+    public record Security(String dataKey) {
     }
 }

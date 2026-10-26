@@ -91,3 +91,7 @@ app:
     # Cloudinary dashboard > API Keys > "API environment variable":
     # cloudinary://<api_key>:<api_secret>@<cloud_name>
     url: ${CLOUDINARY_URL:}
+  security:
+    # Encrypts BVN, NIN and bank account numbers. Generate: openssl rand -base64 32
+    # Never change it once data is stored, or that data can't be read back.
+    data-key: ${DATA_ENCRYPTION_KEY}

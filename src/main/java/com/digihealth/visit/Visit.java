@@ -41,6 +41,9 @@ public class Visit extends BaseEntity {
     @Column(name = "service_type")
     private String serviceType;
 
+    @Column
+    private String title;
+
     @Column(name = "scheduled_at", nullable = false)
     private Instant scheduledAt;
 
