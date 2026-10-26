@@ -49,6 +49,12 @@ public class SecurityConfig {
     static final Set<String> PUBLIC_AUTH = Set.of(
         "/auth/login", "/auth/refresh", "/auth/logout", "/auth/forgot-password", "/auth/reset-password");
 
+    static final String[] LEADERSHIP = {
+        "CNO", "CNO_MEDICAL_DIRECTOR", "CHIEF_MEDICAL_OFFICER", "HEAD_OF_CLINICAL_OPERATIONS", "NURSING_SUPERVISOR"};
+    static final String[] ADMINS_AND_LEADERSHIP = {
+        "ADMIN", "SUPER_ADMIN",
+        "CNO", "CNO_MEDICAL_DIRECTOR", "CHIEF_MEDICAL_OFFICER", "HEAD_OF_CLINICAL_OPERATIONS", "NURSING_SUPERVISOR"};
+
     private final AppProperties props;
 
     public SecurityConfig(AppProperties props) {
@@ -74,7 +80,15 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, PUBLIC_AUTH.toArray(String[]::new)).permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/provider/apply", "/care-requests", "/hmo/apply").permitAll()
+                // Clinical leadership reuses these Admin screens (applications, care requests, schedule)
+                .requestMatchers(HttpMethod.GET, "/admin/providers", "/admin/providers/available",
+                    "/admin/care-requests", "/admin/visits").hasAnyRole(ADMINS_AND_LEADERSHIP)
+                .requestMatchers(HttpMethod.PUT, "/admin/providers/*/approve", "/admin/providers/*/reject",
+                    "/admin/care-requests/*/assign", "/admin/care-requests/*/approve-closure",
+                    "/admin/care-requests/*/reject-closure").hasAnyRole(ADMINS_AND_LEADERSHIP)
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/caregivers").hasAnyRole(ADMINS_AND_LEADERSHIP)
+                .requestMatchers("/cno/**").hasAnyRole(LEADERSHIP)
                 .requestMatchers("/caregivers/**").hasAnyRole("SERVICE_PROVIDER", "CLINICAL_PERSONNEL")
                 .requestMatchers("/patient/**").hasRole("PATIENT")
                 .anyRequest().authenticated())

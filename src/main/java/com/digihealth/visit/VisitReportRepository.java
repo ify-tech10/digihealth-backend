@@ -17,4 +17,8 @@ public interface VisitReportRepository extends JpaRepository<VisitReport, Long> 
     List<VisitReport> findByVisitIdIn(java.util.Collection<Long> visitIds);
 
     List<VisitReport> findByCareRequestIdAndStatusOrderByVisitDateDesc(Long careRequestId, String status);
+
+    List<VisitReport> findAllByOrderByCreatedAtDesc();
+
+    List<VisitReport> findByVisitDateBetweenOrderByVisitDateDesc(java.time.LocalDate from, java.time.LocalDate to);
 }
