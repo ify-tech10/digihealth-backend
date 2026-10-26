@@ -15,4 +15,6 @@ public interface VisitReportRepository extends JpaRepository<VisitReport, Long> 
     boolean existsByVisitId(Long visitId);
 
     List<VisitReport> findByVisitIdIn(java.util.Collection<Long> visitIds);
+
+    List<VisitReport> findByCareRequestIdAndStatusOrderByVisitDateDesc(Long careRequestId, String status);
 }

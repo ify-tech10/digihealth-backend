@@ -19,4 +19,8 @@ public interface HmoSubscriptionRepository extends JpaRepository<HmoSubscription
                                                                      Collection<String> statuses, LocalDate date);
 
     long countByPlanIdAndStatus(Long planId, String status);
+
+    List<HmoSubscription> findByPatientIdOrderByExpiryDateDesc(Long patientId);
+
+    List<HmoSubscription> findByOrganisationIdOrderByExpiryDateDesc(Long organisationId);
 }

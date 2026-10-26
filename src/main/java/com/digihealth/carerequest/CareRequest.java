@@ -91,6 +91,28 @@ public class CareRequest extends BaseEntity {
     @Column(name = "closure_review_note")
     private String closureReviewNote;
 
+    @Column(name = "preferred_date")
+    private java.time.LocalDate preferredDate;
+
+    /** MORNING | AFTERNOON | EVENING */
+    @Column(name = "time_slot")
+    private String timeSlot;
+
+    @Column(name = "care_recipient_name")
+    private String careRecipientName;
+
+    @Column(name = "care_recipient_phone")
+    private String careRecipientPhone;
+
+    @Column(name = "care_recipient_relationship")
+    private String careRecipientRelationship;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
+    @Column(name = "cancelled_at")
+    private Instant cancelledAt;
+
     public CareRequest(String fullName, String email, String phoneNumber, String serviceNeeded, String source) {
         this.fullName = fullName;
         this.email = email;

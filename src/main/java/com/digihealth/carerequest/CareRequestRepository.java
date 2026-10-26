@@ -11,6 +11,8 @@ public interface CareRequestRepository extends JpaRepository<CareRequest, Long> 
 
     List<CareRequest> findByPatientIdOrderByCreatedAtDesc(Long patientId);
 
+    java.util.Optional<CareRequest> findByIdAndPatientId(Long id, Long patientId);
+
     List<CareRequest> findByStatusOrderByCreatedAtDesc(String status);
 
     List<CareRequest> findAllByOrderByCreatedAtDesc();

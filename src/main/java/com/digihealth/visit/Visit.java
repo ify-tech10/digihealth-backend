@@ -71,6 +71,15 @@ public class Visit extends BaseEntity {
     @Column(name = "created_by_id")
     private Long createdById;
 
+    @Column
+    private Short rating;
+
+    @Column(name = "feedback_comment")
+    private String feedbackComment;
+
+    @Column(name = "rated_at")
+    private Instant ratedAt;
+
     public Visit(Long providerId, Instant scheduledAt) {
         this.providerId = providerId;
         this.scheduledAt = scheduledAt;
