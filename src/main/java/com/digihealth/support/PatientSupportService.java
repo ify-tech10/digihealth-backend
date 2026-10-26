@@ -93,7 +93,7 @@ public class PatientSupportService {
             throw ApiException.conflict("This conversation is closed. Please start a new one.");
         }
         messages.save(new TicketMessage(t.getId(), me.getId(), TicketMessage.PATIENT, me.getFullName(), text.trim()));
-        if (SupportTicket.RESOLVED.equals(t.getStatus())) {
+        if (SupportTicket.RESOLVED.equals(t.getStatus()) || SupportTicket.PENDING.equals(t.getStatus())) {
             t.setStatus(SupportTicket.OPEN);
             t.setResolvedAt(null);
         }

@@ -22,4 +22,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRoleOrderByCreatedAtDesc(Role role);
 
     long countByRoleInAndActiveTrue(Collection<Role> roles);
+
+    /** Patient lookup: name, email or phone contains the text (pass "%text%", lower-case). */
+    @org.springframework.data.jpa.repository.Query("""
+        select u from User u where u.role = :role and (
+            lower(u.fullName) like :q or lower(u.email) like :q or replace(u.phoneNumber, ' ', '') like :q)
+        order by u.fullName""")
+    List<User> search(@org.springframework.data.repository.query.Param("role") Role role,
+                      @org.springframework.data.repository.query.Param("q") String q,
+                      org.springframework.data.domain.Pageable page);
 }

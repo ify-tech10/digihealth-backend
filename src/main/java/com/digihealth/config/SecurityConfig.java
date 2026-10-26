@@ -55,6 +55,10 @@ public class SecurityConfig {
         "ADMIN", "SUPER_ADMIN",
         "CNO", "CNO_MEDICAL_DIRECTOR", "CHIEF_MEDICAL_OFFICER", "HEAD_OF_CLINICAL_OPERATIONS", "NURSING_SUPERVISOR"};
 
+    static final String[] CARE_DESK = {
+        "CUSTOMER_CARE", "ADMIN", "SUPER_ADMIN",
+        "CNO", "CNO_MEDICAL_DIRECTOR", "CHIEF_MEDICAL_OFFICER", "HEAD_OF_CLINICAL_OPERATIONS", "NURSING_SUPERVISOR"};
+
     private final AppProperties props;
 
     public SecurityConfig(AppProperties props) {
@@ -91,6 +95,8 @@ public class SecurityConfig {
                 .requestMatchers("/cno/**").hasAnyRole(LEADERSHIP)
                 .requestMatchers("/caregivers/**").hasAnyRole("SERVICE_PROVIDER", "CLINICAL_PERSONNEL")
                 .requestMatchers("/patient/**").hasRole("PATIENT")
+                .requestMatchers("/customer-care/**").hasRole("CUSTOMER_CARE")
+                .requestMatchers("/patients/**").hasAnyRole(CARE_DESK)
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .bearerTokenResolver(bearerTokenResolver())

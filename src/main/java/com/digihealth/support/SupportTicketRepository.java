@@ -12,4 +12,8 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, Lo
     Optional<SupportTicket> findByIdAndPatientId(Long id, Long patientId);
 
     List<SupportTicket> findAllByOrderByLastMessageAtDesc();
+
+    List<SupportTicket> findByPatientIdInAndStatusNotIn(java.util.Collection<Long> patientIds, java.util.Collection<String> statuses);
+
+    List<SupportTicket> findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(java.time.Instant from, java.time.Instant to);
 }
