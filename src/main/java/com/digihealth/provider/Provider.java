@@ -127,6 +127,10 @@ public class Provider extends BaseEntity {
     @Column(name = "review_note")
     private String reviewNote;
 
+    /** Switched on/off by the provider; only available providers can be assigned. */
+    @Column(name = "is_available", nullable = false)
+    private boolean available = true;
+
     public Provider(String fullName, String email, String phoneNumber) {
         this.fullName = fullName;
         this.email = email;

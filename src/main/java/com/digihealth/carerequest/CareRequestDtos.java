@@ -18,7 +18,7 @@ public final class CareRequestDtos {
             @NotBlank(message = "Email is required") @Email(message = "Enter a valid email") @Size(max = 255) String email,
             @NotBlank(message = "Phone number is required") @Pattern(regexp = PHONE_RULE, message = "Enter a valid phone number") String phoneNumber,
             @Size(max = 300, message = "Address is too long") String address,
-            @Size(max = 60) String locationArea,
+            @NotBlank(message = "Please select your area so we can match a nurse near you") @Size(max = 60) String locationArea,
             @NotBlank(message = "Please select a service") @Size(max = 100) String serviceNeeded,
             @Size(max = 2000, message = "Please keep the description under 2,000 characters") String description,
             @NotBlank(message = "Please select a preferred time") @Size(max = 40) String preferredContactTime) {
