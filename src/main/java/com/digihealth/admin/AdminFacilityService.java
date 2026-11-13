@@ -124,6 +124,21 @@ public class AdminFacilityService {
         if (emailChanged && users.existsByEmail(email)) {
             throw ApiException.conflict(email + " already has a DiGi Health account. Use a different email.");
         }
+        if (admin == null) {
+            /* Onboarded by an RM without a login: create the facility admin now. */
+            boolean activeNow = body.active() == null ? f.isActive() : body.active();
+            User created = new User(email, body.contactPerson().trim(), kind.adminRole);
+            created.setPhoneNumber(body.phoneNumber().trim());
+            created.setLocationArea(body.locationArea().trim());
+            created.setActive(activeNow);
+            created.setCreatedById(CurrentUser.idOrNull());
+            created = users.save(created);
+            f.setAdminUserId(created.getId());
+            if (activeNow) {
+                passwordLinks.sendInvite(created);
+            }
+            emailChanged = false;
+        }
 
         apply(f, body, email);
         boolean active = body.active() == null ? f.isActive() : body.active();

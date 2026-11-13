@@ -29,7 +29,8 @@ public class Facility extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    /** The facility admin's login email; may be empty for RM-onboarded facilities. */
+    @Column
     private String email;
 
     @Column(name = "phone_number", nullable = false)
@@ -41,7 +42,7 @@ public class Facility extends BaseEntity {
     @Column(name = "location_area", nullable = false)
     private String locationArea;
 
-    @Column(name = "contact_person", nullable = false)
+    @Column(name = "contact_person")
     private String contactPerson;
 
     @Column(nullable = false)
@@ -85,6 +86,10 @@ public class Facility extends BaseEntity {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    /** Extra onboarding details as JSON text (RM forms). */
+    @Column
+    private String details;
 
     public Facility(FacilityKind kind, String name) {
         this.kind = kind;

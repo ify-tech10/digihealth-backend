@@ -11,4 +11,9 @@ public interface FacilityInvoiceRepository extends JpaRepository<FacilityInvoice
     List<FacilityInvoice> findByStatusOrderByCreatedAtDesc(String status);
 
     List<FacilityInvoice> findByFacilityIdOrderByCreatedAtDesc(Long facilityId);
+
+    boolean existsByInvoiceNumber(String invoiceNumber);
+
+    /** Already billed: any invoice for this request that wasn't declined. */
+    boolean existsByRequestIdAndStatusNot(Long requestId, String status);
 }

@@ -15,4 +15,6 @@ public interface FacilityRepository extends JpaRepository<Facility, Long> {
     Optional<Facility> findByAdminUserIdAndDeletedAtIsNull(Long adminUserId);
 
     boolean existsByKindAndDeletedAtIsNullAndNameIgnoreCase(FacilityKind kind, String name);
+
+    List<Facility> findByDeletedAtIsNullOrderByCreatedAtDesc();
 }
