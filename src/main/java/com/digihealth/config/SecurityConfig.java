@@ -101,6 +101,7 @@ public class SecurityConfig {
                 .requestMatchers("/facility/**").hasAnyRole("HOSPITAL_ADMIN", "PHARMACY_ADMIN", "LAB_ADMIN")
                 .requestMatchers("/lab/**").hasRole("LAB_SCIENTIST")
                 .requestMatchers("/pharmacy/**").hasRole("PHARMACIST")
+                .requestMatchers("/hmo/**").hasRole("HMO")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .bearerTokenResolver(bearerTokenResolver())

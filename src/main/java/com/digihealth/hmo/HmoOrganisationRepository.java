@@ -20,4 +20,7 @@ public interface HmoOrganisationRepository extends JpaRepository<HmoOrganisation
     List<HmoOrganisation> findAllByOrderByCreatedAtDesc();
 
     long countByStatus(String status);
+
+    /** The company a signed-in HMO admin runs. */
+    java.util.Optional<HmoOrganisation> findByAdminUserId(Long adminUserId);
 }
