@@ -95,3 +95,7 @@ app:
     # Encrypts BVN, NIN and bank account numbers. Generate: openssl rand -base64 32
     # Never change it once data is stored, or that data can't be read back.
     data-key: ${DATA_ENCRYPTION_KEY}
+  paystack:
+    # Paystack dashboard > Settings > API Keys & Webhooks > Secret Key. Empty = online payment off.
+    # Webhook URL to set there: https://<backend>/api/payments/paystack/webhook
+    secret-key: ${PAYSTACK_SECRET_KEY:}

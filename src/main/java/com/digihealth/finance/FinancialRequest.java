@@ -26,6 +26,7 @@ public class FinancialRequest extends BaseEntity {
     public static final String PENDING = "PENDING";
     public static final String APPROVED = "APPROVED";
     public static final String REJECTED = "REJECTED";
+    public static final String PAID = "PAID";
 
     @Column(nullable = false)
     private String title;
@@ -65,6 +66,19 @@ public class FinancialRequest extends BaseEntity {
 
     @Column(name = "reviewed_at")
     private Instant reviewedAt;
+
+    /* Finance's decision once Admin has approved (the Expense Claims page). */
+    @Column(name = "finance_decision")
+    private String financeDecision;
+
+    @Column(name = "finance_note")
+    private String financeNote;
+
+    @Column(name = "finance_reviewed_by_id")
+    private Long financeReviewedById;
+
+    @Column(name = "finance_reviewed_at")
+    private Instant financeReviewedAt;
 
     public FinancialRequest(String title, String category, BigDecimal amount) {
         this.title = title;

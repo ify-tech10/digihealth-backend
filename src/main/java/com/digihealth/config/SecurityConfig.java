@@ -84,6 +84,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, PUBLIC_AUTH.toArray(String[]::new)).permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/provider/apply", "/care-requests", "/hmo/apply").permitAll()
+                .requestMatchers(HttpMethod.POST, "/payments/paystack/webhook").permitAll()
                 // Clinical leadership reuses these Admin screens (applications, care requests, schedule)
                 .requestMatchers(HttpMethod.GET, "/admin/providers", "/admin/providers/available",
                     "/admin/care-requests", "/admin/visits").hasAnyRole(ADMINS_AND_LEADERSHIP)
@@ -102,6 +103,7 @@ public class SecurityConfig {
                 .requestMatchers("/lab/**").hasRole("LAB_SCIENTIST")
                 .requestMatchers("/pharmacy/**").hasRole("PHARMACIST")
                 .requestMatchers("/hmo/**").hasRole("HMO")
+                .requestMatchers("/finance/**").hasRole("FINANCE_MANAGER")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .bearerTokenResolver(bearerTokenResolver())

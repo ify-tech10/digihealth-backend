@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.digihealth.common.ReasonBody;
+import com.digihealth.finance.BillingService;
 import com.digihealth.patientportal.PatientAccountService.DocumentView;
 import com.digihealth.patientportal.PatientAccountService.PaymentView;
 import com.digihealth.patientportal.PatientAccountService.ProfileBody;
@@ -37,12 +38,14 @@ public class PatientPortalController {
     private final PatientBookingService bookings;
     private final PatientAccountService account;
     private final PatientSupportService support;
+    private final BillingService billing;
 
     public PatientPortalController(PatientBookingService bookings, PatientAccountService account,
-                                   PatientSupportService support) {
+                                   PatientSupportService support, BillingService billing) {
         this.bookings = bookings;
         this.account = account;
         this.support = support;
+        this.billing = billing;
     }
 
     /* ── Care ── */
@@ -100,16 +103,17 @@ public class PatientPortalController {
         return account.documents();
     }
 
-    /* ── Bills (patient invoices arrive with Finance, Phase 12) ── */
+    /* ── Bills: invoices from Finance, paid online through Paystack ── */
 
     @GetMapping("/invoices")
-    public List<Object> invoices() {
-        return List.of();
+    public List<BillingService.InvoiceView> invoices() {
+        return billing.myInvoices();
     }
 
+    /** { authorizationUrl, reference } - the page sends the patient to authorizationUrl. */
     @PostMapping("/invoices/{id}/pay")
     public Map<String, String> pay(@PathVariable("id") Long id) {
-        return account.pay(id);
+        return billing.startPayment(id);
     }
 
     @GetMapping("/payments")

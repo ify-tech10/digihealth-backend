@@ -66,6 +66,9 @@ public class FacilityInvoice extends BaseEntity {
     @Column(name = "payment_reference")
     private String paymentReference;
 
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
     public FacilityInvoice(Long facilityId, String invoiceNumber, BigDecimal totalAmount) {
         this.facilityId = facilityId;
         this.invoiceNumber = invoiceNumber;

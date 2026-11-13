@@ -14,7 +14,8 @@ public record AppProperties(
         Tokens tokens,
         Mail mail,
         Cloudinary cloudinary,
-        Security security) {
+        Security security,
+        Paystack paystack) {
 
     public record Cors(List<String> allowedOrigins) {
     }
@@ -37,6 +38,10 @@ public record AppProperties(
 
     /** cloudinary://<api_key>:<api_secret>@<cloud_name> */
     public record Cloudinary(String url) {
+    }
+
+    /** Paystack secret key (sk_test_... / sk_live_...). Empty = online payment switched off. */
+    public record Paystack(String secretKey) {
     }
 
     /** dataKey: base64 of 32 random bytes, encrypts BVN / NIN / account numbers. */
