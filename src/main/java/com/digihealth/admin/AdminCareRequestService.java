@@ -280,8 +280,12 @@ public class AdminCareRequestService {
 
     private Map<Long, Provider> providersById(Collection<Long> ids) {
         List<Long> wanted = ids.stream().filter(Objects::nonNull).distinct().toList();
-        return wanted.isEmpty() ? Map.of()
-            : providers.findAllById(wanted).stream().collect(Collectors.toMap(Provider::getId, Function.identity()));
+        /* a HashMap, not Map.of(): callers look up null ids (unassigned requests), which Map.of() rejects */
+        Map<Long, Provider> out = new HashMap<>();
+        if (!wanted.isEmpty()) {
+            providers.findAllById(wanted).forEach(p -> out.put(p.getId(), p));
+        }
+        return out;
     }
 
     private static CareRequestView view(CareRequest r, Provider p) {
