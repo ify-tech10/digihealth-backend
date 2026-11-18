@@ -1,0 +1,9 @@
+# Never copy secrets or local build output into the image
+.env
+.env.*
+!.env.example
+target/
+.idea/
+.git/
+*.iml
+HELP.md
