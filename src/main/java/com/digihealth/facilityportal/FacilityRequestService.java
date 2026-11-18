@@ -38,6 +38,7 @@ import com.digihealth.facility.FacilityRequestRepository;
 import com.digihealth.file.FileService;
 import com.digihealth.notification.NotificationService;
 import com.digihealth.user.Role;
+import com.digihealth.user.UserRepository;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -72,11 +73,13 @@ public class FacilityRequestService {
     private final NotificationService notifications;
     private final ActivityService activity;
     private final ObjectMapper json;
+    private final UserRepository users;
     private final SecureRandom random = new SecureRandom();
 
     public FacilityRequestService(FacilityContext ctx, FacilityRequestRepository requests, FacilityRepository facilities,
                                   FacilityInvoiceRepository invoices, FileService files,
-                                  NotificationService notifications, ActivityService activity, ObjectMapper json) {
+                                  NotificationService notifications, ActivityService activity, ObjectMapper json,
+                                  UserRepository users) {
         this.ctx = ctx;
         this.requests = requests;
         this.facilities = facilities;
@@ -85,6 +88,7 @@ public class FacilityRequestService {
         this.notifications = notifications;
         this.activity = activity;
         this.json = json;
+        this.users = users;
     }
 
     /* ── bodies ── */
@@ -502,6 +506,9 @@ public class FacilityRequestService {
         r.setAttachmentFileId(n.attachmentFileId());
         Long me = CurrentUser.idOrNull();
         r.setRequestedById(me);
+        if (me != null) {
+            users.findById(me).ifPresent(u -> r.setRequestedByName(u.getFullName()));
+        }
         FacilityRequest saved = requests.save(r);
 
         if (f.getAdminUserId() != null) {

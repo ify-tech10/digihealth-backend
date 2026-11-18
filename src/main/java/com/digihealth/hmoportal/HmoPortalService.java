@@ -36,6 +36,8 @@ import com.digihealth.carerequest.CareRequestRepository;
 import com.digihealth.common.ApiException;
 import com.digihealth.common.AppTime;
 import com.digihealth.common.CurrentUser;
+import com.digihealth.finance.Invoice;
+import com.digihealth.finance.InvoiceRepository;
 import com.digihealth.hmo.HmoEmployee;
 import com.digihealth.hmo.HmoEmployeeRepository;
 import com.digihealth.hmo.HmoOrganisation;
@@ -93,6 +95,7 @@ public class HmoPortalService {
     private final UserRepository users;
     private final PatientRepository patients;
     private final CareRequestRepository careRequests;
+    private final InvoiceRepository invoices;
     private final PasswordLinks passwordLinks;
     private final NotificationService notifications;
     private final ActivityService activity;
@@ -101,7 +104,7 @@ public class HmoPortalService {
     public HmoPortalService(HmoOrganisationRepository organisations, HmoEmployeeRepository employees,
                             HmoUploadRepository uploads, HmoPlanRepository plans, HmoSubscriptionRepository subscriptions,
                             HmoPlanChangeRequestRepository planChanges, UserRepository users, PatientRepository patients,
-                            CareRequestRepository careRequests, PasswordLinks passwordLinks,
+                            CareRequestRepository careRequests, InvoiceRepository invoices, PasswordLinks passwordLinks,
                             NotificationService notifications, ActivityService activity, ObjectMapper json) {
         this.organisations = organisations;
         this.employees = employees;
@@ -112,6 +115,7 @@ public class HmoPortalService {
         this.users = users;
         this.patients = patients;
         this.careRequests = careRequests;
+        this.invoices = invoices;
         this.passwordLinks = passwordLinks;
         this.notifications = notifications;
         this.activity = activity;
@@ -400,7 +404,7 @@ public class HmoPortalService {
      * Care requested by the company's employees in a year.
      * { year, monthly: [{ month, requests, amount }], byService: [{ service, requests, amount }],
      *   byEmployee: [{ employeeId, name, department, requests, amount }], totalRequests, totalAmount }
-     * Amounts stay 0 until care is billed against the plan (Finance, Phase 12).
+     * Amounts are what Finance invoiced each employee (cancelled invoices left out), by invoice date.
      */
     @Transactional(readOnly = true)
     public Map<String, Object> utilisation(Integer year) {
@@ -418,8 +422,11 @@ public class HmoPortalService {
             monthly.put(String.format("%d-%02d", y, mth), 0L);
         }
         Map<String, Long> byService = new LinkedHashMap<>();
+        Map<String, BigDecimal> monthAmount = new LinkedHashMap<>();
+        Map<String, BigDecimal> serviceAmount = new LinkedHashMap<>();
         List<Map<String, Object>> byEmployee = new ArrayList<>();
         long total = 0;
+        BigDecimal totalAmount = BigDecimal.ZERO;
         for (HmoEmployee e : staff) {
             long count = 0;
             for (CareRequest r : careRequests.findByPatientIdOrderByCreatedAtDesc(e.getUserId())) {
@@ -433,12 +440,24 @@ public class HmoPortalService {
                 byService.merge(r.getServiceNeeded() == null ? "OTHER" : r.getServiceNeeded(), 1L, Long::sum);
             }
             total += count;
+            BigDecimal spent = BigDecimal.ZERO;
+            for (Invoice inv : invoices.findByPatientUserIdAndStatusNotOrderByCreatedAtDesc(e.getUserId(), Invoice.CANCELLED)) {
+                if (inv.getCreatedAt().isBefore(from) || !inv.getCreatedAt().isBefore(to)) {
+                    continue;
+                }
+                String month = inv.getCreatedAt().atZone(AppTime.ZONE).toLocalDate().toString().substring(0, 7);
+                monthAmount.merge(month, inv.getTotalAmount(), BigDecimal::add);
+                serviceAmount.merge(inv.getCategory(), inv.getTotalAmount(), BigDecimal::add);
+                byService.putIfAbsent(inv.getCategory(), 0L);
+                spent = spent.add(inv.getTotalAmount());
+            }
+            totalAmount = totalAmount.add(spent);
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("employeeId", e.getId());
             row.put("name", e.fullName());
             row.put("department", e.getDepartment());
             row.put("requests", count);
-            row.put("amount", BigDecimal.ZERO);
+            row.put("amount", spent);
             byEmployee.add(row);
         }
         byEmployee.sort((a, b) -> Long.compare((Long) b.get("requests"), (Long) a.get("requests")));
@@ -446,14 +465,16 @@ public class HmoPortalService {
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("year", y);
         out.put("monthly", monthly.entrySet().stream()
-            .map(x -> Map.<String, Object>of("month", x.getKey(), "requests", x.getValue(), "amount", BigDecimal.ZERO))
+            .map(x -> Map.<String, Object>of("month", x.getKey(), "requests", x.getValue(),
+                "amount", monthAmount.getOrDefault(x.getKey(), BigDecimal.ZERO)))
             .toList());
         out.put("byService", byService.entrySet().stream()
-            .map(x -> Map.<String, Object>of("service", x.getKey(), "requests", x.getValue(), "amount", BigDecimal.ZERO))
+            .map(x -> Map.<String, Object>of("service", x.getKey(), "requests", x.getValue(),
+                "amount", serviceAmount.getOrDefault(x.getKey(), BigDecimal.ZERO)))
             .toList());
         out.put("byEmployee", byEmployee);
         out.put("totalRequests", total);
-        out.put("totalAmount", BigDecimal.ZERO);
+        out.put("totalAmount", totalAmount);
         return out;
     }
 
@@ -669,12 +690,15 @@ public class HmoPortalService {
             long requests = careRequests.findByPatientIdOrderByCreatedAtDesc(e.getUserId()).stream()
                 .filter(r -> !CareRequest.CANCELLED.equals(r.getStatus()) && !r.getCreatedAt().isBefore(e.getCreatedAt()))
                 .count();
+            BigDecimal used = invoices.findByPatientUserIdAndStatusNotOrderByCreatedAtDesc(e.getUserId(), Invoice.CANCELLED)
+                .stream().filter(inv -> !inv.getCreatedAt().isBefore(e.getCreatedAt()))
+                .map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
             out.add(new EmployeeView(e.getId(), e.getUserId(), e.getFirstName(), e.getLastName(), e.fullName(),
                 u == null ? null : u.getEmail(), u == null ? null : u.getPhoneNumber(), e.getDepartment(),
                 e.getStaffId(), p == null ? null : p.getDateOfBirth(), p == null ? null : p.getGender(), status, nok,
                 consent, p == null ? null : p.getNextOfKinName(), p == null ? null : p.getConsentSignedAt(),
                 u != null && u.hasPassword(), e.getInvitedAt(), e.getDeactivatedAt(), e.getDeactivatedReason(),
-                requests, BigDecimal.ZERO, e.getCreatedAt()));
+                requests, used, e.getCreatedAt()));
         }
         return out;
     }

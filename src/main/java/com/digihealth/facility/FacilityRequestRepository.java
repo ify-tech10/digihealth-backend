@@ -14,4 +14,8 @@ public interface FacilityRequestRepository extends JpaRepository<FacilityRequest
     Optional<FacilityRequest> findByIdAndFacilityId(Long id, Long facilityId);
 
     boolean existsByReference(String reference);
+
+    List<FacilityRequest> findAllByOrderByCreatedAtDesc();
+
+    List<FacilityRequest> findByPatientIdAndStatusOrderByCreatedAtDesc(Long patientId, String status);
 }

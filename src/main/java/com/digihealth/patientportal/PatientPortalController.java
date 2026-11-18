@@ -39,13 +39,16 @@ public class PatientPortalController {
     private final PatientAccountService account;
     private final PatientSupportService support;
     private final BillingService billing;
+    private final PatientRecordsService records;
 
     public PatientPortalController(PatientBookingService bookings, PatientAccountService account,
-                                   PatientSupportService support, BillingService billing) {
+                                   PatientSupportService support, BillingService billing,
+                                   PatientRecordsService records) {
         this.bookings = bookings;
         this.account = account;
         this.support = support;
         this.billing = billing;
+        this.records = records;
     }
 
     /* ── Care ── */
@@ -86,21 +89,26 @@ public class PatientPortalController {
         return bookings.rate(id, body);
     }
 
-    /* ── Records (lab results and medications arrive with the lab / pharmacy portals) ── */
+    /* ── Records: results and drugs from partner facilities and DiGi's lab / pharmacy ── */
 
     @GetMapping("/lab-results")
-    public List<Object> labResults() {
-        return List.of();
+    public List<Map<String, Object>> labResults() {
+        return records.labResults();
     }
 
     @GetMapping("/medications")
-    public List<Object> medications() {
-        return List.of();
+    public List<Map<String, Object>> medications() {
+        return records.medications();
     }
 
+    /** Approved visit reports plus lab reports, discharge summaries and drug deliveries, newest first. */
     @GetMapping("/documents")
     public List<DocumentView> documents() {
-        return account.documents();
+        List<DocumentView> all = new java.util.ArrayList<>(account.documents());
+        all.addAll(records.documents());
+        all.sort(java.util.Comparator.comparing(DocumentView::createdAt,
+            java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())));
+        return all;
     }
 
     /* ── Bills: invoices from Finance, paid online through Paystack ── */

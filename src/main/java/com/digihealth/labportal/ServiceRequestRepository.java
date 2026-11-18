@@ -17,4 +17,8 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     Optional<ServiceRequest> findByIdAndKind(Long id, String kind);
 
     boolean existsByRequestNumber(String requestNumber);
+
+    List<ServiceRequest> findAllByOrderByCreatedAtDesc();
+
+    List<ServiceRequest> findByPatientIdAndStatusOrderByCreatedAtDesc(Long patientId, String status);
 }
